@@ -1,6 +1,7 @@
 import glob
 import os
 import plistlib
+import re
 import shutil
 import zipfile
 import gdown
@@ -16,9 +17,26 @@ URLS_TO_DOWNLOAD = [
 os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+def get_gdrive_download_url(url):
+    """Извлекает ID из любой ссылки Google Drive и формирует прямую ссылку для скачивания."""
+    file_id = None
+    if '/file/d/' in url:
+        parts = url.split('/file/d/')
+        if len(parts) > 1:
+            file_id = parts[1].split('/')[0]
+    elif 'id=' in url:
+        match = re.search(r'id=([a-zA-Z0-9_-]+)', url)
+        if match:
+            file_id = match.group(1)
+            
+    if file_id:
+        return f'https://drive.google.com/uc?export=download&id={file_id}'
+    return url
+
 def download_file(url, target_path):
-    print(f"Скачивание с Google Drive: {url} ...")
-    gdown.download(url, target_path, fuzzy=True, quiet=False)
+    download_url = get_gdrive_download_url(url)
+    print(f"Скачивание с Google Drive: {download_url} ...")
+    gdown.download(download_url, target_path, quiet=False)
     print(f"Успешно скачано: {target_path}")
 
 def patch_ipa(ipa_path):
