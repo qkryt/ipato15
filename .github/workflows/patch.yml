@@ -1,13 +1,13 @@
-name: Patch IPAs and Create Release
+name: Auto Download from GDrive, Patch and Release
 
 on:
-  workflow_dispatch: # Позволяет запускать вручную кнопкой "Run workflow"
+  workflow_dispatch: # Запуск одной кнопкой в интерфейсе GitHub
 
 jobs:
   build-and-release:
     runs-on: macos-latest
     permissions:
-      contents: write # Разрешение на создание релизов и загрузку файлов
+      contents: write # Права на создание релизов и загрузку файлов
 
     steps:
       - name: Checkout repository
@@ -18,13 +18,15 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Run patch script
+      - name: Install gdown
+        run: pip install gdown
+
+      - name: Run Auto Download & Patch
         run: python3 patch.py
 
-      - name: Generate Automatic Tag & Release Name
+      - name: Generate Tag & Release Name
         id: tag_name
         run: |
-          # Создаем уникальный тег с датой и временем (например, v15-20261023-120000)
           TAG="v15-$(date +'%Y%m%d-%H%M%S')"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
@@ -33,7 +35,7 @@ jobs:
         with:
           tag_name: ${{ steps.tag_name.outputs.tag }}
           name: "Patched IPAs for iOS 15 (${{ steps.tag_name.outputs.tag }})"
-          body: "Автоматически пропатченные файлы .ipa под iOS 15."
+          body: "Автоматически скачано с Google Drive и пропатчено под iOS 15."
           files: output_ipas/*.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
