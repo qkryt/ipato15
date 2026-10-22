@@ -1,14 +1,15 @@
-name: Patch IPAs for iOS 15
+name: Patch IPAs and Upload to Releases
 
 on:
-  workflow_dispatch: # Позволяет запускать вручную кнопкой в GitHub
-  push:
-    branches:
-      - main
+  release:
+    types: [published] # Сработает автоматически при публикации релиза
+  workflow_dispatch:   # Сохраняем возможность ручного запуска через вкладку Actions
 
 jobs:
-  build:
+  build-and-release:
     runs-on: macos-latest
+    permissions:
+      contents: write # Разрешение на загрузку файлов в Releases
 
     steps:
       - name: Checkout repository
@@ -22,8 +23,10 @@ jobs:
       - name: Run patch script
         run: python3 patch.py
 
-      - name: Upload patched IPAs as Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload IPAs to Release
+        uses: softprops/action-gh-release@v2
+        if: github.event_name == 'release'
         with:
-          name: ios15-patched-ipas
-          path: output_ipas/*.ipa
+          files: output_ipas/*.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
