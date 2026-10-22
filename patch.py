@@ -64,10 +64,10 @@ def patch_ipa(ipa_path):
     import shutil
     shutil.rmtree(extract_dir)
     print(f"Готово! Сохранено в {output_path}\n")
-
+    
 if __name__ == "__main__":
     ipas = glob.glob(os.path.join(INPUT_DIR, "*.ipa"))
-    if not ipas:  # <-- Тот самый пробел между not и ipas
+    if not ipas:
         print("В папке input_ipas нет файлов для обработки.")
     for ipa in ipas:
         patch_ipa(ipa)
