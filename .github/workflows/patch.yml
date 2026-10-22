@@ -1,0 +1,29 @@
+name: Patch IPAs for iOS 15
+
+on:
+  workflow_dispatch: # Позволяет запускать вручную кнопкой в GitHub
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run patch script
+        run: python3 patch.py
+
+      - name: Upload patched IPAs as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios15-patched-ipas
+          path: output_ipas/*.ipa
