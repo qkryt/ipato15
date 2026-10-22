@@ -67,7 +67,7 @@ def patch_ipa(ipa_path):
 
 if __name__ == "__main__":
     ipas = glob.glob(os.path.join(INPUT_DIR, "*.ipa"))
-    if notipas:
+    if not ipas:  # <-- Тот самый пробел между not и ipas
         print("В папке input_ipas нет файлов для обработки.")
     for ipa in ipas:
         patch_ipa(ipa)
