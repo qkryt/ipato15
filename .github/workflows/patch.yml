@@ -1,15 +1,13 @@
-name: Patch IPAs and Upload to Releases
+name: Patch IPAs and Create Release
 
 on:
-  release:
-    types: [published] # Сработает автоматически при публикации релиза
-  workflow_dispatch:   # Сохраняем возможность ручного запуска через вкладку Actions
+  workflow_dispatch: # Позволяет запускать вручную кнопкой "Run workflow"
 
 jobs:
   build-and-release:
     runs-on: macos-latest
     permissions:
-      contents: write # Разрешение на загрузку файлов в Releases
+      contents: write # Разрешение на создание релизов и загрузку файлов
 
     steps:
       - name: Checkout repository
@@ -23,10 +21,19 @@ jobs:
       - name: Run patch script
         run: python3 patch.py
 
-      - name: Upload IPAs to Release
+      - name: Generate Automatic Tag & Release Name
+        id: tag_name
+        run: |
+          # Создаем уникальный тег с датой и временем (например, v15-20261023-120000)
+          TAG="v15-$(date +'%Y%m%d-%H%M%S')"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Create Release and Upload IPAs
         uses: softprops/action-gh-release@v2
-        if: github.event_name == 'release'
         with:
+          tag_name: ${{ steps.tag_name.outputs.tag }}
+          name: "Patched IPAs for iOS 15 (${{ steps.tag_name.outputs.tag }})"
+          body: "Автоматически пропатченные файлы .ipa под iOS 15."
           files: output_ipas/*.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
